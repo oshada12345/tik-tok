@@ -6,7 +6,7 @@ from pytube import YouTube
 
 
 # Define your Telegram bot token
-TOKEN = '6162835664:AAF82yhi5W7jJe8VJxeLTk10xKGCLWBn6Fk'
+TOKEN = '6162835664:AAF82yhi5W7jJe8VJxeLTk10xKGCLWBn6FkN'
 
 # Define the command handler for the /start command
 def start(update, context):
@@ -31,19 +31,19 @@ def handle_message(update, context):
             response = requests.get(video_url, stream=True)
             
             # Get the filename from the URL
-            filename = f"{video_id}.mp4"
+            video_filename = f"{video_id}.mp4"
             
             # Save the video to a file
-            with open(filename, 'wb') as file:
+            with open(video_filename, 'wb') as file:
                 for chunk in response.iter_content(chunk_size=1024):
                     if chunk:
                         file.write(chunk)
             
             # Send the downloaded video file
-            context.bot.send_video(chat_id=update.effective_chat.id, video=open(filename, 'rb'))
+            context.bot.send_video(chat_id=update.effective_chat.id, video=open(video_filename, 'rb'), supports_streaming=True)
             
             # Remove the downloaded video file
-            os.remove(filename)
+            os.remove(video_filename)
             
             # Generate the direct download URL for the TikTok audio
             audio_url = generate_direct_audio_url(video_id)
@@ -85,6 +85,7 @@ def generate_direct_download_url(video_id):
 # Define a helper function to generate the direct download URL for the TikTok audio
 def generate_direct_audio_url(video_id):
     return f"https://www.tiktok.com/@_/{video_id}/video/{video_id}"
+
 
 # Create an instance of the Updater class and pass it the Telegram bot token
 updater = Updater(token=TOKEN, use_context=True)
