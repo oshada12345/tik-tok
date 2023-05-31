@@ -1,11 +1,12 @@
 import os
+import re
 import requests
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from pytube import YouTube
 
 
 # Define your Telegram bot token
-TOKEN = '6162835664:AAF82yhi5W7jJe8VJxeLTk10xKGCLWBn6Fk'
+TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN'
 
 # Define the command handler for the /start command
 def start(update, context):
@@ -78,11 +79,12 @@ def extract_video_id(url):
 
 # Define a helper function to generate the direct download URL for the TikTok video
 def generate_direct_download_url(video_id):
-    return f"https://api2-16-h2.musical.ly/aweme/v1/play/?video_id={video_id}&vr_type=0&is_play_url=1&source=PackSourceEnum_PUBLISH"
+    return f"https://www.tiktok.com/@_/{video_id}/video/{video_id}"
+
 
 # Define a helper function to generate the direct download URL for the TikTok audio
 def generate_direct_audio_url(video_id):
-    return f"https://api2-16-h2.musical.ly/aweme/v1/play/?video_id={video_id}&vr_type=0&is_play_url=1&source=PackSourceEnum_PUBLISH&download_type=3"
+    return f"https://www.tiktok.com/@_/{video_id}/video/{video_id}"
 
 # Create an instance of the Updater class and pass it the Telegram bot token
 updater = Updater(token=TOKEN, use_context=True)
