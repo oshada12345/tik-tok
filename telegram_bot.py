@@ -2,7 +2,7 @@ import os
 import re
 from telegram import InputFile
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from tiktok_downloader import TikTokDownloader
+from tiktokpy import TikTokPy
 from moviepy.editor import VideoFileClip
 
 
@@ -28,8 +28,8 @@ def handle_message(update, context):
 
         if video_id:
             try:
-                # Download the TikTok video using tiktok-downloader
-                video_filename = TikTokDownloader().download(video_id)
+                # Download the TikTok video using TikTokPy
+                video_filename = TikTokPy().get_video_by_id(video_id)
 
                 # Get the video duration using moviepy
                 video = VideoFileClip(video_filename)
