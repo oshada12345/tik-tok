@@ -1,6 +1,7 @@
 import os
 import re
 import requests
+from telegram import InputFile
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from pytube import YouTube
 from pytube.cli import on_progress
@@ -47,7 +48,8 @@ def handle_message(update, context):
             video.close()
 
             # Send the downloaded video file
-            context.bot.send_video(chat_id=update.effective_chat.id, video=open(video_filename, 'rb'), duration=video_duration, supports_streaming=True)
+            context.bot.send_chat_action(chat_id=update.effective_chat.id, action="UPLOAD_VIDEO")
+            context.bot.send_video(chat_id=update.effective_chat.id, video=InputFile(video_filename), duration=video_duration, supports_streaming=True)
 
             # Remove the downloaded video file
             os.remove(video_filename)
