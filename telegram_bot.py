@@ -2,6 +2,9 @@ import os
 import re
 import requests
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from pytube import YouTube
+from pytube.cli import on_progress
+from moviepy.editor import VideoFileClip
 
 
 # Define your Telegram bot token
@@ -38,8 +41,13 @@ def handle_message(update, context):
             with open(video_filename, 'wb') as file:
                 file.write(response.content)
 
+            # Get the video duration using moviepy
+            video = VideoFileClip(video_filename)
+            video_duration = video.duration
+            video.close()
+
             # Send the downloaded video file
-            context.bot.send_video(chat_id=update.effective_chat.id, video=open(video_filename, 'rb'), supports_streaming=True)
+            context.bot.send_video(chat_id=update.effective_chat.id, video=open(video_filename, 'rb'), duration=video_duration, supports_streaming=True)
 
             # Remove the downloaded video file
             os.remove(video_filename)
