@@ -3,8 +3,6 @@ import re
 import requests
 from telegram import InputFile
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from pytube import YouTube
-from pytube.cli import on_progress
 from moviepy.editor import VideoFileClip
 
 
@@ -49,30 +47,10 @@ def handle_message(update, context):
 
             # Send the downloaded video file
             context.bot.send_chat_action(chat_id=update.effective_chat.id, action="UPLOAD_VIDEO")
-            context.bot.send_video(chat_id=update.effective_chat.id, video=InputFile(video_filename), duration=video_duration, supports_streaming=True)
+            context.bot.send_video(chat_id=update.effective_chat.id, video=InputFile(video_filename), duration=int(video_duration), supports_streaming=True)
 
             # Remove the downloaded video file
             os.remove(video_filename)
-
-            # Generate the direct download URL for the TikTok audio
-            audio_url = generate_direct_audio_url(video_id)
-
-            if audio_url:
-                # Download the TikTok audio using requests library
-                audio_response = requests.get(audio_url)
-
-                # Get the filename from the URL
-                audio_filename = f"{video_id}.mp3"
-
-                # Save the audio to a file
-                with open(audio_filename, 'wb') as file:
-                    file.write(audio_response.content)
-
-                # Send the downloaded audio file
-                context.bot.send_audio(chat_id=update.effective_chat.id, audio=open(audio_filename, 'rb'))
-
-                # Remove the downloaded audio file
-                os.remove(audio_filename)
 
         else:
             # Send an error message if the video ID cannot be extracted
@@ -93,11 +71,6 @@ def extract_video_id(url):
 
 # Define a helper function to generate the direct download URL for the TikTok video
 def generate_direct_download_url(video_id):
-    return f"https://www.tiktok.com/@_/{video_id}/video/{video_id}"
-
-
-# Define a helper function to generate the direct download URL for the TikTok audio
-def generate_direct_audio_url(video_id):
     return f"https://www.tiktok.com/@_/{video_id}/video/{video_id}"
 
 
