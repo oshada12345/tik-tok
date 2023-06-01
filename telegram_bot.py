@@ -31,14 +31,16 @@ def handle_message(update, context):
             video_url = generate_direct_download_url(video_id)
 
             # Download the TikTok video using requests library
-            response = requests.get(video_url)
+            response = requests.get(video_url, stream=True)
 
             # Get the filename from the URL
             video_filename = f"{video_id}.mp4"
 
             # Save the video to a file
             with open(video_filename, 'wb') as file:
-                file.write(response.content)
+                for chunk in response.iter_content(chunk_size=1024):
+                    if chunk:
+                        file.write(chunk)
 
             # Get the video duration using moviepy
             video = VideoFileClip(video_filename)
