@@ -3,6 +3,8 @@ import re
 import requests
 from telegram import InputFile
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from pytube import YouTube
+from pytube.exceptions import PytubeError
 from moviepy.editor import VideoFileClip
 
 
@@ -27,32 +29,33 @@ def handle_message(update, context):
         video_id = extract_video_id(message_text)
 
         if video_id:
-            # Generate the direct download URL for the TikTok video
-            video_url = generate_direct_download_url(video_id)
+            try:
+                # Create a YouTube object using the TikTok video URL
+                tiktok_url = f"https://www.tiktok.com/@_/{video_id}"
+                youtube = YouTube(tiktok_url)
 
-            # Download the TikTok video using requests library
-            response = requests.get(video_url, stream=True)
+                # Get the highest resolution video stream
+                video_stream = youtube.streams.get_highest_resolution()
 
-            # Get the filename from the URL
-            video_filename = f"{video_id}.mp4"
+                # Download the video
+                video_filename = f"{video_id}.mp4"
+                video_stream.download(output_path=".", filename=video_filename)
 
-            # Save the video to a file
-            with open(video_filename, 'wb') as file:
-                for chunk in response.iter_content(chunk_size=1024):
-                    if chunk:
-                        file.write(chunk)
+                # Get the video duration using moviepy
+                video = VideoFileClip(video_filename)
+                video_duration = video.duration
+                video.close()
 
-            # Get the video duration using moviepy
-            video = VideoFileClip(video_filename)
-            video_duration = video.duration
-            video.close()
+                # Send the downloaded video file
+                context.bot.send_chat_action(chat_id=update.effective_chat.id, action="UPLOAD_VIDEO")
+                context.bot.send_video(chat_id=update.effective_chat.id, video=InputFile(video_filename), duration=int(video_duration), supports_streaming=True)
 
-            # Send the downloaded video file
-            context.bot.send_chat_action(chat_id=update.effective_chat.id, action="UPLOAD_VIDEO")
-            context.bot.send_video(chat_id=update.effective_chat.id, video=InputFile(video_filename), duration=int(video_duration), supports_streaming=True)
+                # Remove the downloaded video file
+                os.remove(video_filename)
 
-            # Remove the downloaded video file
-            os.remove(video_filename)
+            except PytubeError:
+                # Send an error message if there's an issue with downloading the video
+                context.bot.send_message(chat_id=update.effective_chat.id, text="Failed to download TikTok video.")
 
         else:
             # Send an error message if the video ID cannot be extracted
@@ -69,11 +72,6 @@ def extract_video_id(url):
     if match:
         return match.group(1)
     return None
-
-
-# Define a helper function to generate the direct download URL for the TikTok video
-def generate_direct_download_url(video_id):
-    return f"https://www.tiktok.com/@_/{video_id}/video/{video_id}"
 
 
 # Create an instance of the Updater class and pass it the Telegram bot token
