@@ -1,10 +1,8 @@
 import os
 import re
-import requests
 from telegram import InputFile
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from pytube import YouTube
-from pytube.exceptions import PytubeError
+from tiktok_downloader import TikTokDownloader
 from moviepy.editor import VideoFileClip
 
 
@@ -30,16 +28,8 @@ def handle_message(update, context):
 
         if video_id:
             try:
-                # Create a YouTube object using the TikTok video URL
-                tiktok_url = f"https://www.tiktok.com/@_/{video_id}"
-                youtube = YouTube(tiktok_url)
-
-                # Get the highest resolution video stream
-                video_stream = youtube.streams.get_highest_resolution()
-
-                # Download the video
-                video_filename = f"{video_id}.mp4"
-                video_stream.download(output_path=".", filename=video_filename)
+                # Download the TikTok video using tiktok-downloader
+                video_filename = TikTokDownloader().download(video_id)
 
                 # Get the video duration using moviepy
                 video = VideoFileClip(video_filename)
@@ -53,7 +43,7 @@ def handle_message(update, context):
                 # Remove the downloaded video file
                 os.remove(video_filename)
 
-            except PytubeError:
+            except Exception:
                 # Send an error message if there's an issue with downloading the video
                 context.bot.send_message(chat_id=update.effective_chat.id, text="Failed to download TikTok video.")
 
