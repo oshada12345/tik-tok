@@ -28,8 +28,12 @@ def handle_message(update, context):
 
         if video_id:
             try:
-                # Download the TikTok video using TikTokPy
-                video_filename = TikTokPy().get_video_by_id(video_id)
+                # Download the TikTok video using pytube
+                video_url = f"https://www.tiktok.com/@{video_id}"
+                yt = YouTube(video_url)
+                video = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').desc().first()
+                video_filename = f"{video_id}.mp4"
+                video.download(output_path='.', filename=video_filename)
 
                 # Get the video duration using moviepy
                 video = VideoFileClip(video_filename)
@@ -54,6 +58,7 @@ def handle_message(update, context):
     else:
         # Send an error message if the message is not a valid TikTok URL
         context.bot.send_message(chat_id=update.effective_chat.id, text="Please provide a valid TikTok video URL.")
+
 
 
 # Define a helper function to extract the TikTok video ID from the URL
