@@ -2,8 +2,6 @@ import os
 import re
 import requests
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from pytube import YouTube
-from pytube.cli import on_progress
 
 
 # Define your Telegram bot token
@@ -31,22 +29,14 @@ def handle_message(update, context):
             video_url = generate_direct_download_url(video_id)
 
             # Download the TikTok video using requests library
-            response = requests.get(video_url, stream=True)
+            response = requests.get(video_url)
 
             # Get the filename from the URL
             video_filename = f"{video_id}.mp4"
 
             # Save the video to a file
             with open(video_filename, 'wb') as file:
-                total_size = int(response.headers.get('content-length'))
-                downloaded_size = 0
-                for chunk in response.iter_content(chunk_size=1024):
-                    if chunk:
-                        file.write(chunk)
-                        downloaded_size += len(chunk)
-                        progress = (downloaded_size / total_size) * 100
-                        context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
-                        context.bot.send_message(chat_id=update.effective_chat.id, text=f"Downloading video: {progress:.2f}%")
+                file.write(response.content)
 
             # Send the downloaded video file
             context.bot.send_video(chat_id=update.effective_chat.id, video=open(video_filename, 'rb'), supports_streaming=True)
@@ -58,16 +48,21 @@ def handle_message(update, context):
             audio_url = generate_direct_audio_url(video_id)
 
             if audio_url:
-                # Download the TikTok audio using pytube library
+                # Download the TikTok audio using requests library
+                audio_response = requests.get(audio_url)
+
+                # Get the filename from the URL
                 audio_filename = f"{video_id}.mp3"
-                YouTube(audio_url, on_progress_callback=on_progress).streams.first().download(filename='audio', filename_prefix='')
-                os.rename(audio_filename, audio_filename + '.mp3')
+
+                # Save the audio to a file
+                with open(audio_filename, 'wb') as file:
+                    file.write(audio_response.content)
 
                 # Send the downloaded audio file
-                context.bot.send_audio(chat_id=update.effective_chat.id, audio=open(audio_filename + '.mp3', 'rb'))
+                context.bot.send_audio(chat_id=update.effective_chat.id, audio=open(audio_filename, 'rb'))
 
                 # Remove the downloaded audio file
-                os.remove(audio_filename + '.mp3')
+                os.remove(audio_filename)
 
         else:
             # Send an error message if the video ID cannot be extracted
